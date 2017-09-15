@@ -1,0 +1,38 @@
+{
+  "name": "envup",
+  "version": "0.0.0",
+  "description": "Command line tool to configure dotenv files",
+  "main": "index.js",
+  "scripts": {
+    "build": "babel src --out-dir lib",
+    "dev": "npm run build -- --watch",
+    "prepublish": "npm run build",
+    "start": "npm run dev",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/luk707/envup.git"
+  },
+  "keywords": [
+    "CLI",
+    "dotenv",
+    "configure"
+  ],
+  "author": "Luke Harris <lukeharris01170@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/luk707/envup/issues"
+  },
+  "homepage": "https://github.com/luk707/envup#readme",
+  "dependencies": {
+    "command-line-args": "^4.0.7",
+    "command-line-usage": "^4.0.1",
+    "inquirer": "^3.2.3",
+    "then-fs": "^2.0.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-es2015": "^6.24.1"
+  }
+}
