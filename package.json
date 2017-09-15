@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "description": "Command line tool to configure dotenv files",
   "main": "index.js",
+  "bin": "lib/index.js",
   "scripts": {
     "build": "babel src --out-dir lib",
     "dev": "npm run build -- --watch",
