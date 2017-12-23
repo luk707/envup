@@ -93,6 +93,6 @@ fs
   )
 ))
 .then(() => {
-  console.log('Wrote enviornment file succesfully!')
+  console.log('Wrote environment file succesfully!')
 })
 .catch(console.error)
