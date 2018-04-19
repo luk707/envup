@@ -177,18 +177,15 @@ fs
         .then(
           environment =>
             options.default
-              ? {
-                  prompt: options =>
-                    Promise.resolve(
-                      options.reduce(
+              ? Promise.resolve(
+                    environment.reduce(
                         (acc, option) => ({
                           ...acc,
-                          [option.name]: option.default
+                          [option.name]: option.defaultOption
                         }),
                         {}
                       )
                     )
-                }
               : Inquirer.prompt(
                   environment.map(({ name, defaultOption, sensitive }) => ({
                     type: sensitive ? "password" : "input",
