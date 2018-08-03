@@ -5,7 +5,6 @@ import commandLineArgs from "command-line-args";
 import commandLineUsage from "command-line-usage";
 import path from "path";
 import fs from "then-fs";
-import { create } from "domain";
 
 const optionDefinitions = [
   {
@@ -127,58 +126,73 @@ const readEnvFile = (path, options) =>
     });
   });
 
-fs
-  .exists(path.join(directory, "env.js"))
-  .then(jsExists => {
-    if (jsExists) {
-      const createEnv = require(path.join(directory, "env.js"));
-      return readEnvFile(path.join(directory, ".env"), options)
-        .then(env =>
-          createEnv(
-            options.default
-              ? {
-                  prompt: options =>
-                    Promise.resolve(
-                      options.reduce(
-                        (acc, option) => ({
-                          ...acc,
-                          [option.name]: option.default
-                        }),
-                        {}
-                      )
-                    )
-                }
-              : Inquirer,
-            env
-          )
-        )
-        .then(environment =>
-          fs.writeFile(
-            path.join(directory, ".env"),
-            new Buffer(
-              Object.keys(environment)
-                .reverse()
-                .reduce((acc, cur) => `${cur}=${environment[cur]}\n${acc}`, ""),
-              "utf-8"
-            )
-          )
-        )
-        .then(() => {
-          console.log("Wrote environment file succesfully!");
-        });
+Promise.all([
+  fs.exists(path.join(directory, "env.js")),
+  fs.exists(path.join(directory, "env.json"))
+])
+  .then(([jsExists, jsonExists]) => {
+    if (!jsExists && jsonExists) {
+      console.log(
+        "You must have a env.json or env.js file in the specified directory."
+      );
     }
-    return fs.exists(path.join(directory, "env.json"));
   })
-  .then(jsonExists => {
-    if (jsonExists) {
-      return fs
-        .readFile(path.join(directory, "env.json"))
-        .then(JSON.parse)
-        .then(
-          environment =>
-            options.default
-              ? Promise.resolve(
-                    environment.reduce(
+  .then(() =>
+    fs
+      .exists(path.join(directory, "env.js"))
+      .then(jsExists => {
+        if (jsExists) {
+          const createEnv = require(path.join(directory, "env.js"));
+          return readEnvFile(path.join(directory, ".env"), options)
+            .then(env =>
+              createEnv(
+                options.default
+                  ? {
+                      prompt: options =>
+                        Promise.resolve(
+                          options.reduce(
+                            (acc, option) => ({
+                              ...acc,
+                              [option.name]: option.default
+                            }),
+                            {}
+                          )
+                        )
+                    }
+                  : Inquirer,
+                env
+              )
+            )
+            .then(environment =>
+              fs.writeFile(
+                path.join(directory, ".env"),
+                new Buffer(
+                  Object.keys(environment)
+                    .reverse()
+                    .reduce(
+                      (acc, cur) => `${cur}=${environment[cur]}\n${acc}`,
+                      ""
+                    ),
+                  "utf-8"
+                )
+              )
+            )
+            .then(() => {
+              console.log("Wrote environment file succesfully!");
+            });
+        }
+        return fs.exists(path.join(directory, "env.json"));
+      })
+      .then(jsonExists => {
+        if (jsonExists) {
+          return fs
+            .readFile(path.join(directory, "env.json"))
+            .then(JSON.parse)
+            .then(
+              environment =>
+                options.default
+                  ? Promise.resolve(
+                      environment.reduce(
                         (acc, option) => ({
                           ...acc,
                           [option.name]: option.defaultOption
@@ -186,33 +200,33 @@ fs
                         {}
                       )
                     )
-              : Inquirer.prompt(
-                  environment.map(({ name, defaultOption, sensitive }) => ({
-                    type: sensitive ? "password" : "input",
-                    name,
-                    message: `Enter ${name}:`,
-                    default: defaultOption || ""
-                  }))
-                )
-        )
-        .then(environment =>
-          fs.writeFile(
-            path.join(directory, ".env"),
-            new Buffer(
-              Object.keys(environment)
-                .reverse()
-                .reduce((acc, cur) => `${cur}=${environment[cur]}\n${acc}`, ""),
-              "utf-8"
+                  : Inquirer.prompt(
+                      environment.map(({ name, defaultOption, sensitive }) => ({
+                        type: sensitive ? "password" : "input",
+                        name,
+                        message: `Enter ${name}:`,
+                        default: defaultOption || ""
+                      }))
+                    )
             )
-          )
-        )
-        .then(() => {
-          console.log("Wrote environment file succesfully!");
-        });
-    } else {
-      console.log(
-        "You must have a env.json or env.js file in the specified directory."
-      );
-    }
-  })
-  .catch(console.error);
+            .then(environment =>
+              fs.writeFile(
+                path.join(directory, ".env"),
+                new Buffer(
+                  Object.keys(environment)
+                    .reverse()
+                    .reduce(
+                      (acc, cur) => `${cur}=${environment[cur]}\n${acc}`,
+                      ""
+                    ),
+                  "utf-8"
+                )
+              )
+            )
+            .then(() => {
+              console.log("Wrote environment file succesfully!");
+            });
+        }
+      })
+      .catch(console.error)
+  );
