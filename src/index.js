@@ -131,7 +131,7 @@ Promise.all([
   fs.exists(path.join(directory, "env.json"))
 ])
   .then(([jsExists, jsonExists]) => {
-    if (!jsExists && jsonExists) {
+    if (!jsExists && !jsonExists) {
       console.log(
         "You must have a env.json or env.js file in the specified directory."
       );
